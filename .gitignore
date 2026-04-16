@@ -1,0 +1,13 @@
+# Environment variables — never commit secrets
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Docker
+*.log
