@@ -92,7 +92,9 @@ services:
 
   # ── Apache Superset ───────────────────────────────────────────────────────────
   superset:
-    image: apache/superset:latest
+    build:
+      context: ./superset
+      dockerfile: Dockerfile
     container_name: nordhem_superset
     restart: unless-stopped
     environment:
