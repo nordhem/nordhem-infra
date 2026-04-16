@@ -48,13 +48,26 @@ docker-compose ps
 docker exec -it nordhem_postgres psql -U nordhem -d postgres
 ```
 
-Useful commands inside psql:
+Once inside, run these to verify the setup:
+
 ```sql
-\l                  -- list all databases
-\c nordhem_source   -- connect to nordhem_source
-\dn                 -- list schemas
-\dt reference.*     -- list reference tables
-\dt operational.*   -- list operational tables
+-- List all databases (expect: postgres, dagster_state, nordhem_source, superset_metadata)
+\l
+
+-- Connect to nordhem_source
+\c nordhem_source
+
+-- List schemas (expect: reference, operational, public)
+\dn
+
+-- List reference tables (expect: diagnoses, plan_types, procedure_codes, providers)
+\dt reference.*
+
+-- List operational tables (expect: 11 tables)
+\dt operational.*
+
+-- Exit
+\q
 ```
 
 ## Data Persistence
