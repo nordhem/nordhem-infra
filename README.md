@@ -4,12 +4,12 @@ Infrastructure for the Nordhem Data Platform. Runs all services locally via Dock
 
 ## Services
 
-| Service | Port | Purpose |
-|---|---|---|
-| PostgreSQL 16 | 5432 | OLTP source (`nordhem_source`) + Dagster metadata (`dagster_state`) |
-| MinIO | 9000 / 9001 | Local S3-compatible data lake (`nordhem-lake`) |
-| Trino | 8080 | Query engine over Iceberg on MinIO |
-| Apache Superset | 8088 | Dashboards |
+| Service | Image | Port | Purpose |
+|---|---|---|---|
+| PostgreSQL 16 | `postgres:16` | 5432 | OLTP source (`nordhem_source`) + Dagster metadata (`dagster_state`) + Superset metadata (`superset_metadata`) |
+| MinIO | `minio/minio:latest` | 9000 / 9001 | Local S3-compatible data lake (`nordhem-lake` bucket) |
+| Trino | `trinodb/trino:latest` | 8080 | Query engine over Iceberg on MinIO |
+| Apache Superset | custom build | 8088 | Dashboards and reporting |
 
 ## Quick Start
 
@@ -28,11 +28,34 @@ docker-compose ps
 
 ## Service URLs
 
-| Service | URL |
+| Service | URL | Default Credentials |
+|---|---|---|
+| MinIO Console | http://localhost:9001 | See `.env` |
+| Trino UI | http://localhost:8080 | None required |
+| Superset | http://localhost:8088 | See `.env` |
+
+## Postgres Databases
+
+| Database | Purpose |
 |---|---|
-| MinIO Console | http://localhost:9001 |
-| Trino UI | http://localhost:8080 |
-| Superset | http://localhost:8088 |
+| `nordhem_source` | OLTP source system — `reference` and `operational` schemas |
+| `dagster_state` | Dagster pipeline metadata |
+| `superset_metadata` | Superset internal metadata |
+
+## Connecting to Postgres
+
+```bash
+docker exec -it nordhem_postgres psql -U nordhem -d postgres
+```
+
+Useful commands inside psql:
+```sql
+\l                  -- list all databases
+\c nordhem_source   -- connect to nordhem_source
+\dn                 -- list schemas
+\dt reference.*     -- list reference tables
+\dt operational.*   -- list operational tables
+```
 
 ## Data Persistence
 
@@ -49,6 +72,13 @@ Destroy everything including data:
 ```bash
 docker-compose down -v
 ```
+
+## Notes
+
+- Superset is built from a custom Dockerfile (`superset/Dockerfile`) to include `psycopg2-binary`
+- MinIO bucket `nordhem-lake` is created automatically on first startup via `minio_init`
+- All operational tables have `tenant_id`, UUID PKs, audit columns, soft deletes, and RLS enabled
+- Tables are created but unpopulated — data is loaded via `nordhem-pipelines`
 
 ## Part of the Nordhem Platform
 
